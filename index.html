@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>62 Otobüs Saatleri</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 400px;
+      margin: auto;
+    }
+    h1 {
+      font-size: 24px;
+    }
+    .sefer {
+      margin-bottom: 15px;
+    }
+    .time {
+      font-weight: bold;
+      font-size: 20px;
+    }
+    .code {
+      color: gray;
+    }
+  </style>
+</head>
+<body>
+  <h1>🚍 62 Kağıthane Otobüsü</h1>
+  <div id="sonraki"></div>
+
+  <script>
+    async function main() {
+      const res = await fetch("https://raw.githubusercontent.com/Egnnn/62otobus-json/refs/heads/main/bus_schedule.json");
+      const data = await res.json();
+
+      const now = new Date();
+      const gun = now.getDay();
+      const gunTuru = gun === 0 ? "sunday" : gun === 6 ? "saturday" : "weekday";
+
+      const simdiDakika = now.getHours() * 60 + now.getMinutes();
+      const liste = data[gunTuru].map((item) => {
+        const [saat, dakika] = item.time.split(":").map(Number);
+        const dakikaFarki = saat * 60 + dakika - simdiDakika;
+        return { ...item, diff: dakikaFarki };
+      }).filter(item => item.diff >= 0).sort((a, b) => a.diff - b.diff).slice(0, 2);
+
+      const container = document.getElementById("sonraki");
+      liste.forEach(sefer => {
+        const el = document.createElement("div");
+        el.className = "sefer";
+        el.innerHTML = `
+          <div class="time">${sefer.time} (${sefer.diff} dk sonra)</div>
+          ${sefer.code ? `<div class="code">Sefer kodu: -${sefer.code}</div>` : ""}
+        `;
+        container.appendChild(el);
+      });
+    }
+
+    main();
+  </script>
+</body>
+</html>
