@@ -40,11 +40,22 @@
       font-size: 14px;
       margin-top: 5px;
     }
+    footer {
+      margin-top: 40px;
+      font-size: 14px;
+      color: #777;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
   <h1>🚍 62 Kağıthane Otobüsü</h1>
   <div id="sonraki"></div>
+
+  <footer>
+    * Yeni saatler güncellenmiştir<br>
+    * Pazar günündeki sorun düzeltilmiştir
+  </footer>
 
   <script>
     async function main() {
@@ -52,23 +63,27 @@
       const data = await res.json();
 
       const now = new Date();
-      const gun = now.getDay();
-      const gunTuru = gun === 0 ? "sunday" : gun === 6 ? "saturday" : "weekday";
+      const gunAdi = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(now);
+      let gunTuru = "weekday";
+      if (gunAdi === "Saturday") gunTuru = "saturday";
+      if (gunAdi === "Sunday") gunTuru = "sunday";
 
       const simdiDakika = now.getHours() * 60 + now.getMinutes();
       const liste = data[gunTuru].map((item) => {
         const [saat, dakika] = item.time.split(":").map(Number);
         const dakikaFarki = saat * 60 + dakika - simdiDakika;
         return { ...item, diff: dakikaFarki };
-      }).filter(item => item.diff >= 0).sort((a, b) => a.diff - b.diff).slice(0, 2);
+      }).filter(item => item.diff >= 0).sort((a, b) => a.diff - b.diff).slice(0, 5);
 
       const container = document.getElementById("sonraki");
+      container.innerHTML = "";
+
       liste.forEach(sefer => {
         const el = document.createElement("div");
         el.className = "sefer";
         el.innerHTML = `
           <div class="time">${sefer.time} (${sefer.diff} dk sonra)</div>
-          ${sefer.code ? `<div class="code">Sefer kodu: -${sefer.code}</div>` : ""}
+          ${sefer.code ? `<div class="code">Sefer kodu: ${sefer.code}</div>` : ""}
         `;
         container.appendChild(el);
       });
@@ -78,4 +93,5 @@
   </script>
 </body>
 </html>
+
 
